@@ -1,0 +1,200 @@
+import { CV2Telemetry, Joint2D, MonthlyHistoryRecord, MuscleRingTelemetry, HeatmapPoint } from '../types';
+
+export const INITIAL_CV2_TELEMETRY: CV2Telemetry = {
+  fps: 60,
+  fogDetected: false,
+  fogConfidence: 3.2,
+  nonFogScore: 96.8,
+  tunnelToppleRisk: 12.4,
+  trafficSnailIRAT: 0.28,
+  hoverStrength: 42.5,
+  amplifiedAttitudePitch: 4.8,
+  amplifiedAttitudeRoll: -1.2,
+  slantedSurfaceAngle: 15.0,
+  leakageBoundCoeff: 0.038,
+  consumedPowerWatts: 345.2,
+  concaveEfficiencyScore: 91.4,
+};
+
+export const INITIAL_MUSCLE_RING: MuscleRingTelemetry = {
+  connected: true,
+  deviceName: 'EMG-Ring-Pro-v2.4 (BLE)',
+  batteryLevel: 88,
+  signalRSSI: -58,
+  emgSignalMicrovolts: 412,
+  muscleVerificationScore: 98.6,
+  hoverStrengthTarget: 45.0,
+  appliedAttitudeOffset: 2.5,
+};
+
+export const INITIAL_JOINTS: Joint2D[] = [
+  { id: 'fl_hip', name: 'Front Left Hip', x: 30, y: 40, contact: false, forceN: 12.0 },
+  { id: 'fl_foot', name: 'Front Left Foot', x: 28, y: 75, contact: true, forceN: 145.2 },
+  { id: 'fr_hip', name: 'Front Right Hip', x: 45, y: 40, contact: false, forceN: 14.5 },
+  { id: 'fr_foot', name: 'Front Right Foot', x: 48, y: 70, contact: false, forceN: 8.0 },
+  { id: 'rl_hip', name: 'Rear Left Hip', x: 65, y: 42, contact: false, forceN: 18.2 },
+  { id: 'rl_foot', name: 'Rear Left Foot', x: 62, y: 72, contact: false, forceN: 6.5 },
+  { id: 'rr_hip', name: 'Rear Right Hip', x: 78, y: 42, contact: false, forceN: 16.0 },
+  { id: 'rr_foot', name: 'Rear Right Foot', x: 80, y: 76, contact: true, forceN: 162.8 },
+];
+
+export const MONTHLY_HISTORY_LOGS: MonthlyHistoryRecord[] = [
+  {
+    id: 'm-2026-07',
+    month: '2026-07',
+    subjectId: 'QUAD-BOT-404',
+    locomotionType: 'quadruped_robot',
+    totalHours: 142,
+    consumedPowerKWh: 89.4,
+    avgHoverStrength: 44.2,
+    tunnelToppleIncidents: 1,
+    fogEventsCount: 2,
+    avgConcaveEfficiency: 92.1,
+    leakageRiskIndex: 'Low',
+  },
+  {
+    id: 'm-2026-06',
+    month: '2026-06',
+    subjectId: 'EXO-SUBJ-89',
+    locomotionType: 'exoskeleton_human',
+    totalHours: 98,
+    consumedPowerKWh: 42.1,
+    avgHoverStrength: 38.0,
+    tunnelToppleIncidents: 4,
+    fogEventsCount: 14,
+    avgConcaveEfficiency: 86.5,
+    leakageRiskIndex: 'Moderate',
+  },
+  {
+    id: 'm-2026-05',
+    month: '2026-05',
+    subjectId: 'QUAD-BOT-404',
+    locomotionType: 'quadruped_robot',
+    totalHours: 160,
+    consumedPowerKWh: 104.2,
+    avgHoverStrength: 48.5,
+    tunnelToppleIncidents: 0,
+    fogEventsCount: 1,
+    avgConcaveEfficiency: 94.3,
+    leakageRiskIndex: 'Low',
+  },
+  {
+    id: 'm-2026-04',
+    month: '2026-04',
+    subjectId: 'EQUINE-TEST-02',
+    locomotionType: 'equine_locomotion',
+    totalHours: 85,
+    consumedPowerKWh: 128.0,
+    avgHoverStrength: 52.1,
+    tunnelToppleIncidents: 2,
+    fogEventsCount: 0,
+    avgConcaveEfficiency: 89.0,
+    leakageRiskIndex: 'Low',
+  },
+  {
+    id: 'm-2026-03',
+    month: '2026-03',
+    subjectId: 'EXO-SUBJ-89',
+    locomotionType: 'exoskeleton_human',
+    totalHours: 110,
+    consumedPowerKWh: 54.6,
+    avgHoverStrength: 35.8,
+    tunnelToppleIncidents: 8,
+    fogEventsCount: 22,
+    avgConcaveEfficiency: 82.4,
+    leakageRiskIndex: 'High',
+  },
+  {
+    id: 'm-2026-02',
+    month: '2026-02',
+    subjectId: 'QUAD-BOT-301',
+    locomotionType: 'quadruped_robot',
+    totalHours: 120,
+    consumedPowerKWh: 78.5,
+    avgHoverStrength: 41.0,
+    tunnelToppleIncidents: 2,
+    fogEventsCount: 3,
+    avgConcaveEfficiency: 90.8,
+    leakageRiskIndex: 'Moderate',
+  },
+];
+
+export const MOCK_HEATMAP_POINTS: HeatmapPoint[] = [
+  { x: 28, y: 75, intensity: 0.92, leakageRisk: false, dwellMs: 320 },
+  { x: 30, y: 74, intensity: 0.85, leakageRisk: false, dwellMs: 290 },
+  { x: 80, y: 76, intensity: 0.96, leakageRisk: false, dwellMs: 340 },
+  { x: 82, y: 75, intensity: 0.88, leakageRisk: false, dwellMs: 310 },
+  { x: 48, y: 70, intensity: 0.45, leakageRisk: true, dwellMs: 140 }, // slip point
+  { x: 62, y: 72, intensity: 0.38, leakageRisk: true, dwellMs: 110 },
+  { x: 40, y: 82, intensity: 0.20, leakageRisk: false, dwellMs: 80 },
+  { x: 70, y: 84, intensity: 0.25, leakageRisk: false, dwellMs: 95 },
+];
+
+export const PRESET_SCENARIOS = [
+  {
+    id: 'normal_trot',
+    name: 'Standard Nominal Trot',
+    description: 'Balanced posture, 15° slant, low leakage risk, high concave efficiency.',
+    telemetry: {
+      ...INITIAL_CV2_TELEMETRY,
+      fogDetected: false,
+      fogConfidence: 2.1,
+      nonFogScore: 97.9,
+      tunnelToppleRisk: 8.5,
+      trafficSnailIRAT: 0.18,
+      hoverStrength: 42.0,
+      concaveEfficiencyScore: 94.2,
+      consumedPowerWatts: 320,
+      leakageBoundCoeff: 0.025,
+    }
+  },
+  {
+    id: 'fog_incident',
+    name: 'Freezing of Gait (FOG) Alert',
+    description: 'Human Exo / Clinical walk showing sudden gait hesitation, low iRAT, high FOG confidence.',
+    telemetry: {
+      ...INITIAL_CV2_TELEMETRY,
+      fogDetected: true,
+      fogConfidence: 94.6,
+      nonFogScore: 5.4,
+      tunnelToppleRisk: 68.2,
+      trafficSnailIRAT: 0.89,
+      hoverStrength: 22.0,
+      concaveEfficiencyScore: 68.5,
+      consumedPowerWatts: 480,
+      leakageBoundCoeff: 0.12,
+    }
+  },
+  {
+    id: 'steep_slant_leakage',
+    name: 'High Slant Ground Slip & Leakage',
+    description: '35° inclines with increased stance bound leakage and elevated tunnel topple hazard.',
+    telemetry: {
+      ...INITIAL_CV2_TELEMETRY,
+      slantedSurfaceAngle: 35.0,
+      fogDetected: false,
+      tunnelToppleRisk: 82.4,
+      trafficSnailIRAT: 0.65,
+      hoverStrength: 68.0,
+      amplifiedAttitudePitch: 18.5,
+      concaveEfficiencyScore: 78.4,
+      consumedPowerWatts: 610,
+      leakageBoundCoeff: 0.185,
+    }
+  },
+  {
+    id: 'high_hover_boost',
+    name: 'Hyper-Hover Stance Stabilization',
+    description: 'Maximized hover strength boost applied via muscle ring to counteract terrain instability.',
+    telemetry: {
+      ...INITIAL_CV2_TELEMETRY,
+      hoverStrength: 85.0,
+      fogDetected: false,
+      tunnelToppleRisk: 14.1,
+      trafficSnailIRAT: 0.12,
+      concaveEfficiencyScore: 91.0,
+      consumedPowerWatts: 510,
+      leakageBoundCoeff: 0.015,
+    }
+  }
+];

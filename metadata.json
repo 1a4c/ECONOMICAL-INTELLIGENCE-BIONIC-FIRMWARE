@@ -1,0 +1,6 @@
+{
+  "name": "Legged Locomotion & Gait CV2 Telemetry Suite",
+  "description": "Real-time computer vision gait analysis, event heat maps, FOG detection, muscle-verified Bluetooth access ring telemetry, and efficiency monitoring for legged systems.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
