@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optoelectronic Neuromorphic Vision Chip DSL Simulator</title>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --panel-bg: #111827;
+      --border-color: #1f2937;
+      --accent-cyan: #06b6d4;
+      --accent-magenta: #ec4899;
+      --accent-amber: #f59e0b;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font-mono: 'Courier New', Courier, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid var(--accent-cyan);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .dsl-code-block {
+      background-color: #05070c;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #38bdf8;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: 300px 1fr;
+      }
+    }
+
+    .controls-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent-cyan);
+    }
+
+    .btn {
+      background: var(--accent-cyan);
+      color: #000;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .display-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      margin-top: 4px;
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .canvas-container {
+      position: relative;
+      background: #000;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 240px;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      font-size: 0.75rem;
+      margin-top: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>
+      <span>視感神經晶片 (Neuromorphic Vision Chip)</span>
+    </h1>
+    <span class="status-badge" id="statusBadge">RUNNING</span>
+  </header>
+
+  <div class="dsl-code-block">
+p-beta.inversed_sector[union_impendence_sufficed(volt-golf_S-sampling.safarir_weight.triple-integra{color_image_power_induced(C-V.renew_alcohol-system()_first_order().wave-conducted_order(dislused_golf_os.read(mind_track(pupil_perceived(room_illuminance().non-conflict(dirac_spike()_fame.8-ray()_MOSFET()_queue_api())))))}
+  </div>
+
+  <div class="grid">
+    <!-- 控制面板 -->
+    <div class="controls-panel">
+      <div class="control-group">
+        <label for="illuminance">
+          <span>環境照度 (lux)</span>
+          <span id="illuminanceVal">500</span>
+        </label>
+        <input type="range" id="illuminance" min="10" max="1000" value="500">
+      </div>
+
+      <div class="control-group">
+        <label for="threshold">
+          <span>狄拉克脈衝閾值 (V)</span>
+          <span id="thresholdVal">0.70</span>
+        </label>
+        <input type="range" id="threshold" min="0.1" max="1.0" step="0.05" value="0.70">
+      </div>
+
+      <div class="control-group">
+        <label for="sensitivity">
+          <span>光敏增益 (Photon Gain)</span>
+          <span id="sensitivityVal">5.0</span>
+        </label>
+        <input type="range" id="sensitivity" min="1.0" max="10.0" step="0.5" value="5.0">
+      </div>
+
+      <button class="btn" id="toggleLightBtn">切換光源模式：連續光</button>
+    </div>
+
+    <!-- 顯示面板 -->
+    <div class="display-panel">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Spike Rate</div>
+          <div class="metric-value" style="color: var(--accent-magenta);" id="spikeRate">0 Hz</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">C-V Voltage</div>
+          <div class="metric-value" style="color: var(--accent-cyan);" id="cvVoltage">0.00 V</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Power Induced</div>
+          <div class="metric-value" style="color: var(--accent-amber);" id="powerVal">0 µW</div>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="scopeCanvas"></canvas>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--text-muted);"></div>
+          <span>環境光強</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--accent-cyan);"></div>
+          <span>C-V 膜電位 (Integrator)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--accent-magenta);"></div>
+          <span>狄拉克脈衝 (Dirac Spike)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // DOM 元素
+  const illuminanceInput = document.getElementById('illuminance');
+  const thresholdInput = document.getElementById('threshold');
+  const sensitivityInput = document.getElementById('sensitivity');
+  const toggleLightBtn = document.getElementById('toggleLightBtn');
+
+  const illuminanceVal = document.getElementById('illuminanceVal');
+  const thresholdVal = document.getElementById('thresholdVal');
+  const sensitivityVal = document.getElementById('sensitivityVal');
+
+  const spikeRateElem = document.getElementById('spikeRate');
+  const cvVoltageElem = document.getElementById('cvVoltage');
+  const powerValElem = document.getElementById('powerVal');
+
+  const canvas = document.getElementById('scopeCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // Canvas RWD 尺寸適應
+  function resizeCanvas() {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  // 系統狀態變數
+  let isPulsedMode = false;
+  let voltage = 0.0; // LIF 膜電位
+  let spikesHistory = [];
+  let voltageHistory = [];
+  let lightHistory = [];
+
+  const maxHistory = 200;
+  let spikeCounter = 0;
+  let lastRateCalculateTime = Date.now();
+
+  // 控制項監聽
+  illuminanceInput.addEventListener('input', (e) => illuminanceVal.textContent = e.target.value);
+  thresholdInput.addEventListener('input', (e) => thresholdVal.textContent = parseFloat(e.target.value).toFixed(2));
+  sensitivityInput.addEventListener('input', (e) => sensitivityVal.textContent = parseFloat(e.target.value).toFixed(1));
+
+  toggleLightBtn.addEventListener('click', () => {
+    isPulsedMode = !isPulsedMode;
+    toggleLightBtn.textContent = `切換光源模式：${isPulsedMode ? '頻閃光 (10Hz)' : '連續光'}`;
+  });
+
+  // 主模擬迴圈 (LIF 模型)
+  function stepSimulation() {
+    const lux = parseFloat(illuminanceInput.value);
+    const V_th = parseFloat(thresholdInput.value);
+    const gain = parseFloat(sensitivityInput.value);
+
+    // 計算當前光照 (閃爍模式或穩定模式)
+    let currentLight = lux;
+    if (isPulsedMode) {
+      const timeSec = Date.now() / 1000;
+      currentLight = Math.sin(timeSec * Math.PI * 2 * 5) > 0 ? lux : 0;
+    }
+
+    // 瞳孔與光電二極體轉換 (Photodecay & Charge Accumulation)
+    const photocurrent = (currentLight / 1000) * gain * 0.05; 
+    const leak = 0.02; // 電漏效應
+
+    // LIF 積分
+    voltage += photocurrent - leak;
+    if (voltage < 0) voltage = 0;
+
+    let isSpike = false;
+    if (voltage >= V_th) {
+      isSpike = true;
+      voltage = 0; // 發射脈衝後重置
+      spikeCounter++;
+    }
+
+    // 紀錄數據歷史
+    lightHistory.push(currentLight);
+    voltageHistory.push(voltage);
+    spikesHistory.push(isSpike ? 1 : 0);
+
+    if (lightHistory.length > maxHistory) {
+      lightHistory.shift();
+      voltageHistory.shift();
+      spikesHistory.shift();
+    }
+
+    // 計算脈衝頻率與動態功耗
+    const now = Date.now();
+    if (now - lastRateCalculateTime >= 1000) {
+      spikeRateElem.textContent = `${spikeCounter} Hz`;
+      const power = (spikeCounter * 1.2 + photocurrent * 50).toFixed(1);
+      powerValElem.textContent = `${power} µW`;
+      spikeCounter = 0;
+      lastRateCalculateTime = now;
+    }
+
+    cvVoltageElem.textContent = `${voltage.toFixed(2)} V`;
+
+    // 繪製波形圖
+    drawScope(V_th);
+
+    requestAnimationFrame(stepSimulation);
+  }
+
+  // Canvas 示波器繪製
+  function drawScope(V_th) {
+    const width = canvas.width;
+    const height = canvas.height;
+    const step = width / maxHistory;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // 繪製背景網格
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 0; x < width; x += 40) {
+      ctx.moveTo(x, 0); ctx.lineTo(x, height);
+    }
+    for (let y = 0; y < height; y += 40) {
+      ctx.moveTo(0, y); ctx.lineTo(width, y);
+    }
+    ctx.stroke();
+
+    // 1. 繪製輸入光強 (灰白背景線)
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i < lightHistory.length; i++) {
+      const y = height - (lightHistory[i] / 1000) * (height * 0.8) - 10;
+      if (i === 0) ctx.moveTo(0, y);
+      else ctx.lineTo(i * step, y);
+    }
+    ctx.stroke();
+
+    // 2. 繪製閾值虛線
+    const thY = height - (V_th) * (height * 0.7) - 20;
+    ctx.strokeStyle = '#ec4899';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, thY);
+    ctx.lineTo(width, thY);
+    ctx.stroke();
+    ctx.setLineDash([]); // 恢復實線
+
+    // 3. 繪製 C-V 積分電壓 (Cyan 藍綠線)
+    ctx.strokeStyle = '#06b6d4';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < voltageHistory.length; i++) {
+      const y = height - (voltageHistory[i]) * (height * 0.7) - 20;
+      if (i === 0) ctx.moveTo(0, y);
+      else ctx.lineTo(i * step, y);
+    }
+    ctx.stroke();
+
+    // 4. 繪製狄拉克脈衝 Dirac Spikes (Magenta 垂直高壓脈衝)
+    ctx.strokeStyle = '#ec4899';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < spikesHistory.length; i++) {
+      if (spikesHistory[i] === 1) {
+        const x = i * step;
+        ctx.beginPath();
+        ctx.moveTo(x, height - 10);
+        ctx.lineTo(x, 10);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // 啟動模擬
+  stepSimulation();
+</script>
+
+</body>
+</html>
