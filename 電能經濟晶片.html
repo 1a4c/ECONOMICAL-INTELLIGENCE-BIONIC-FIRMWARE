@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Economic Neuromorphic Vision Chip Simulator</title>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --panel-bg: #111827;
+      --border-color: #1f2937;
+      --accent-cyan: #06b6d4;
+      --accent-magenta: #ec4899;
+      --accent-amber: #f59e0b;
+      --accent-green: #10b981;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font-mono: 'Courier New', Courier, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 960px;
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--accent-green);
+      border: 1px solid var(--accent-green);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-family: var(--font-mono);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: 320px 1fr;
+      }
+    }
+
+    .controls-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent-cyan);
+    }
+
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-amber);
+      margin-top: 8px;
+      margin-bottom: 4px;
+      border-left: 3px solid var(--accent-amber);
+      padding-left: 6px;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      margin-top: 4px;
+    }
+
+    .metric-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .canvas-container {
+      position: relative;
+      background: #000;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 260px;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      font-size: 0.75rem;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>電能經濟自適應視感神經晶片 (Economic Neuromorphic Chip)</h1>
+    <span class="status-badge" id="verilogStatus">VERILOG RTL: ACTIVE</span>
+  </header>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">即時動態閾值 (V_th)</div>
+      <div class="metric-value" style="color: var(--accent-amber);" id="vThVal">0.60 V</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Spike Rate</div>
+      <div class="metric-value" style="color: var(--accent-magenta);" id="spikeRate">0 Hz</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">瞬時功耗 (Power)</div>
+      <div class="metric-value" style="color: var(--accent-cyan);" id="powerVal">0 µW</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">即時電能成本</div>
+      <div class="metric-value" style="color: var(--accent-green);" id="costVal">$0.00/s</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- 控制面板 -->
+    <div class="controls-panel">
+      <div class="section-title">擬態光學環境</div>
+      <div class="control-group">
+        <label for="photocurrent">
+          <span>光電流注入 (i_photocurrent)</span>
+          <span id="photocurrentVal">50 mA</span>
+        </label>
+        <input type="range" id="photocurrent" min="5" max="100" value="50">
+      </div>
+
+      <div class="section-title">電能經濟與電網 (RTP)</div>
+      <div class="control-group">
+        <label for="rtpPrice">
+          <span>即時電價 index (i_rtp_price)</span>
+          <span id="rtpPriceVal">10</span>
+        </label>
+        <input type="range" id="rtpPrice" min="1" max="100" value="10">
+      </div>
+
+      <div class="control-group">
+        <label for="capStorage">
+          <span>微電容剩餘電量 (i_cap_storage)</span>
+          <span id="capStorageVal">80%</span>
+        </label>
+        <input type="range" id="capStorage" min="5" max="100" value="80">
+      </div>
+    </div>
+
+    <!-- 示波器圖表 -->
+    <div class="display-panel">
+      <div class="canvas-container">
+        <canvas id="scopeCanvas"></canvas>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--accent-cyan);"></div>
+          <span>C-V 膜電位 (v_membrane)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--accent-amber);"></div>
+          <span>Verilog 動態閾值 (dynamic_threshold)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--accent-magenta);"></div>
+          <span>狄拉克脈衝 (o_dirac_spike)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // DOM 元素引用
+  const photocurrentInput = document.getElementById('photocurrent');
+  const rtpPriceInput = document.getElementById('rtpPrice');
+  const capStorageInput = document.getElementById('capStorage');
+
+  const photocurrentVal = document.getElementById('photocurrentVal');
+  const rtpPriceVal = document.getElementById('rtpPriceVal');
+  const capStorageVal = document.getElementById('capStorageVal');
+
+  const vThVal = document.getElementById('vThVal');
+  const spikeRateElem = document.getElementById('spikeRate');
+  const powerValElem = document.getElementById('powerVal');
+  const costValElem = document.getElementById('costVal');
+
+  const canvas = document.getElementById('scopeCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resizeCanvas() {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  // Verilog 狀態變數 (Q8.8 定點數風格模擬)
+  const BASE_THRESHOLD = 0.5; // 基礎閾值 (Volt)
+  let v_membrane = 0.0;
+  let dynamic_threshold = BASE_THRESHOLD;
+
+  let membraneHistory = [];
+  let thresholdHistory = [];
+  let spikeHistory = [];
+  const maxHistory = 200;
+
+  let spikeCounter = 0;
+  let lastStatTime = Date.now();
+
+  // 事件監聽器
+  photocurrentInput.addEventListener('input', (e) => photocurrentVal.textContent = `${e.target.value} mA`);
+  rtpPriceInput.addEventListener('input', (e) => rtpPriceVal.textContent = e.target.value);
+  capStorageInput.addEventListener('input', (e) => capStorageVal.textContent = `${e.target.value}%`);
+
+  // 硬體時脈模擬迴圈 (模擬 Verilog `always @(posedge clk)`)
+  function verilogClockTick() {
+    const i_photocurrent = parseFloat(photocurrentInput.value) / 1000.0; // 映射至注入電流
+    const i_rtp_price = parseFloat(rtpPriceInput.value);
+    const i_cap_storage = parseFloat(capStorageInput.value);
+
+    // 1. Verilog 控制邏輯：電能經濟與動態閾值 (RTP Energy Economics)
+    if (i_cap_storage < 20) {
+      // 電量極低，激進提升閾值以省電
+      dynamic_threshold = BASE_THRESHOLD + (i_rtp_price * 0.008) + 0.3;
+    } else {
+      // 標準電價調控
+      dynamic_threshold = BASE_THRESHOLD + (i_rtp_price * 0.005);
+    }
+
+    // 2. Verilog LIF 膜電位積分器
+    const leak = 0.005;
+    v_membrane += i_photocurrent - leak;
+    if (v_membrane < 0) v_membrane = 0;
+
+    let o_dirac_spike = false;
+
+    // 3. 閾值比較器與脈衝觸發 (Comparator)
+    if (v_membrane >= dynamic_threshold) {
+      o_dirac_spike = true;
+      v_membrane = 0.0; // Reset
+      spikeCounter++;
+    }
+
+    // 歷史記錄補全
+    membraneHistory.push(v_membrane);
+    thresholdHistory.push(dynamic_threshold);
+    spikeHistory.push(o_dirac_spike ? 1 : 0);
+
+    if (membraneHistory.length > maxHistory) {
+      membraneHistory.shift();
+      thresholdHistory.shift();
+      spikeHistory.shift();
+    }
+
+    // 統計計算 (功耗與電能成本)
+    const now = Date.now();
+    if (now - lastStatTime >= 1000) {
+      spikeRateElem.textContent = `${spikeCounter} Hz`;
+      
+      // 功耗計算: 靜態電流 + (脈衝頻率 * 動態功耗)
+      const powerMicroWatts = (spikeCounter * 1.5 + i_photocurrent * 200).toFixed(1);
+      powerValElem.textContent = `${powerMicroWatts} µW`;
+
+      // 即時電能經濟成本 ($)
+      const costPerSec = ((powerMicroWatts / 1000) * (i_rtp_price * 0.02)).toFixed(4);
+      costValElem.textContent = `$${costPerSec}/s`;
+
+      spikeCounter = 0;
+      lastStatTime = now;
+    }
+
+    vThVal.textContent = `${dynamic_threshold.toFixed(2)} V`;
+
+    drawScope();
+    requestAnimationFrame(verilogClockTick);
+  }
+
+  // 繪製示波器畫面
+  function drawScope() {
+    const width = canvas.width;
+    const height = canvas.height;
+    const step = width / maxHistory;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // 背景網格
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 0; x < width; x += 40) { ctx.moveTo(x, 0); ctx.lineTo(x, height); }
+    for (let y = 0; y < height; y += 40) { ctx.moveTo(0, y); ctx.lineTo(width, y); }
+    ctx.stroke();
+
+    // 繪製 Verilog 動態閾值 (Amber 虛線)
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    for (let i = 0; i < thresholdHistory.length; i++) {
+      const y = height - (thresholdHistory[i] / 1.5) * (height * 0.8) - 20;
+      if (i === 0) ctx.moveTo(0, y);
+      else ctx.lineTo(i * step, y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 繪製 C-V 膜電位 (Cyan 藍綠實線)
+    ctx.strokeStyle = '#06b6d4';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < membraneHistory.length; i++) {
+      const y = height - (membraneHistory[i] / 1.5) * (height * 0.8) - 20;
+      if (i === 0) ctx.moveTo(0, y);
+      else ctx.lineTo(i * step, y);
+    }
+    ctx.stroke();
+
+    // 繪製狄拉克脈衝 (Magenta 垂直強脈衝)
+    ctx.strokeStyle = '#ec4899';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < spikeHistory.length; i++) {
+      if (spikeHistory[i] === 1) {
+        const x = i * step;
+        ctx.beginPath();
+        ctx.moveTo(x, height - 10);
+        ctx.lineTo(x, 15);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // 啟動模擬
+  verilogClockTick();
+</script>
+
+</body>
+</html>
