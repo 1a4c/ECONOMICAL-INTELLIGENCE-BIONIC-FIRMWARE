@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive ISP Firmware & Abstract Math Simulator</title>
+  <style>
+    :root {
+      --bg-color: #090d16;
+      --panel-bg: #131b2a;
+      --accent-blue: #38bdf8;
+      --accent-green: #4ade80;
+      --accent-yellow: #facc15;
+      --accent-red: #f87171;
+      --text-main: #f1f5f9;
+      --text-sub: #94a3b8;
+      --border-color: #1e293b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+    h1 { font-size: 1.4rem; color: var(--accent-blue); }
+    p.subtitle { font-size: 0.85rem; color: var(--text-sub); margin-top: 4px; }
+
+    /* 主要工作區佈局 */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+    }
+
+    /* 控制面板 */
+    .control-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .panel-title { font-size: 1rem; color: var(--accent-blue); font-weight: bold; }
+    .control-group { display: flex; flex-direction: column; gap: 6px; }
+    .control-group label { font-size: 0.8rem; color: var(--text-sub); display: flex; justify-content: space-between; }
+    input[type="range"] { width: 100%; accent-color: var(--accent-blue); }
+
+    .scenario-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+    .btn-scenario {
+      background: #1e293b;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    .btn-scenario.active {
+      background: var(--accent-blue);
+      color: #000;
+      font-weight: bold;
+    }
+
+    /* 渲染與管線視覺化區 */
+    .view-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Canvas 模擬畫布 */
+    .canvas-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      background: var(--panel-bg);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+    .canvas-box { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .canvas-box span { font-size: 0.8rem; color: var(--text-sub); }
+    canvas {
+      background: #000;
+      border-radius: 4px;
+      width: 100%;
+      height: 220px;
+      border: 1px solid #334155;
+    }
+
+    /* Pipeline 卡片區 */
+    .pipeline-container { display: flex; flex-direction: column; gap: 10px; }
+    .node-card {
+      background: var(--panel-bg);
+      border-left: 4px solid var(--accent-blue);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+    }
+    .node-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .node-title { font-weight: bold; }
+    .node-dsl { font-size: 0.75rem; background: #000; color: var(--accent-blue); padding: 2px 6px; border-radius: 4px; }
+    .node-desc { color: var(--text-sub); font-size: 0.8rem; line-height: 1.4; }
+    .highlight { color: var(--accent-yellow); font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>📷 互動式相機韌體與抽象數學 DSL 模擬器</h1>
+    <p class="subtitle">拖曳左側控制項，實時觀察物理參數與 DSL 演算法管線對影像渲染的調變效果</p>
+  </header>
+
+  <div class="app-layout">
+    
+    <!-- 左側互動控制面板 -->
+    <div class="control-panel">
+      <div class="panel-title">🎛️ 物理與感測器參數控制</div>
+
+      <div class="control-group">
+        <label>環境照度 (Lux Value): <span id="val-lux">15 lux</span></label>
+        <input type="range" id="param-lux" min="1" max="100" value="15" oninput="updateSimulation()">
+      </div>
+
+      <div class="control-group">
+        <label>手震/滾動歪斜 (Jitter/Respin): <span id="val-shake">12px</span></label>
+        <input type="range" id="param-shake" min="0" max="30" value="12" oninput="updateSimulation()">
+      </div>
+
+      <div class="control-group">
+        <label>鏡頭廣角畸變 (Distortion): <span id="val-dist">0.45</span></label>
+        <input type="range" id="param-dist" min="0" max="100" value="45" oninput="updateSimulation()">
+      </div>
+
+      <div class="panel-title" style="margin-top: 12px;">🎬 情境快速套用</div>
+      <div class="scenario-btns">
+        <button class="btn-scenario active" onclick="setScenario('night', this)">🌙 微光夜景多幀降噪</button>
+        <button class="btn-scenario" onclick="setScenario('action', this)">🏎️ 高速車載與 Rolling Shutter</button>
+        <button class="btn-scenario" onclick="setScenario('hdr', this)">☀️ 逆光高動態範圍 (HDR)</button>
+      </div>
+    </div>
+
+    <!-- 右側畫布與管線輸出 -->
+    <div class="view-panel">
+      
+      <!-- 即時 Canvas 畫面對比 -->
+      <div class="canvas-container">
+        <div class="canvas-box">
+          <span>RAW 感光元件原始採樣 (Unprocessed)</span>
+          <canvas id="canvas-raw" width="300" height="200"></canvas>
+        </div>
+        <div class="canvas-box">
+          <span>經過 DSL 管線校正輸出 (Processed)</span>
+          <canvas id="canvas-isp" width="300" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- 即時 Pipeline 邏輯狀態 -->
+      <div class="pipeline-container">
+        
+        <div class="node-card">
+          <div class="node-header">
+            <span class="node-title">[01] Concave 區域採樣與點雲重疊</span>
+            <span class="node-dsl">tempted_set.concave-collected</span>
+          </div>
+          <div class="node-desc" id="desc-node1">--</div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-header">
+            <span class="node-title">[02] 幾何座標重繪與全景映射</span>
+            <span class="node-dsl">head-set_pararoma-cube_index.relocate()</span>
+          </div>
+          <div class="node-desc" id="desc-node2">--</div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-header">
+            <span class="node-title">[03] 照度方程與正交噪點剔除</span>
+            <span class="node-dsl">yield_session_reset().tossed_inversed_insected()</span>
+          </div>
+          <div class="node-desc" id="desc-node3">--</div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-header">
+            <span class="node-title">[04] 滾動快門幾何拉正與多幀對齊</span>
+            <span class="node-dsl">respin().annual-cross-section.replicated()</span>
+          </div>
+          <div class="node-desc" id="desc-node4">--</div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-header">
+            <span class="node-title">[05] DMA 環形 Buffer 動態切片</span>
+            <span class="node-dsl">allocate[5::bubble_crossover_queue()]</span>
+          </div>
+          <div class="node-desc" id="desc-node5">--</div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // 取得 HTML 元件
+    const rawCanvas = document.getElementById('canvas-raw');
+    const ispCanvas = document.getElementById('canvas-isp');
+    const rawCtx = rawCanvas.getContext('2d');
+    const ispCtx = ispCanvas.getContext('2d');
+
+    // 核心渲染與模擬函數
+    function updateSimulation() {
+      const lux = parseInt(document.getElementById('param-lux').value);
+      const shake = parseInt(document.getElementById('param-shake').value);
+      const dist = parseInt(document.getElementById('param-dist').value) / 100;
+
+      // 更新數字顯示
+      document.getElementById('val-lux').innerText = `${lux} lux`;
+      document.getElementById('val-shake').innerText = `${shake}px`;
+      document.getElementById('val-dist').innerText = dist.toFixed(2);
+
+      // 1. 繪製 RAW 原始感光畫面（含雜訊、手震歪斜、幾何彎曲）
+      drawRawFrame(lux, shake, dist);
+
+      // 2. 繪製經過 DSL 管線校正後的畫面
+      drawIspFrame(lux);
+
+      // 3. 即時更新 DSL 文字狀態
+      updateDSLDescriptions(lux, shake, dist);
+    }
+
+    // 繪製 RAW 原始畫面
+    function drawRawFrame(lux, shake, dist) {
+      const w = rawCanvas.width;
+      const h = rawCanvas.height;
+      rawCtx.fillStyle = '#000';
+      rawCtx.fillRect(0, 0, w, h);
+
+      // 模擬照度不足（亮度下降）
+      const alpha = Math.min(1, lux / 60);
+      
+      rawCtx.save();
+      // 模擬手震/歪斜
+      rawCtx.translate(w/2 + (Math.random()-0.5)*shake, h/2 + (Math.random()-0.5)*shake);
+      rawCtx.rotate((shake * 0.5 * Math.PI) / 180);
+
+      // 繪製目標物體（幾何網格與圖案）
+      rawCtx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+      rawCtx.lineWidth = 2;
+      
+      // 繪製歪斜的網格（模擬魚眼/歪斜）
+      for(let i = -60; i <= 60; i += 20) {
+        rawCtx.beginPath();
+        rawCtx.moveTo(i, -50 + Math.pow(i, 2) * dist * 0.01);
+        rawCtx.lineTo(i, 50 - Math.pow(i, 2) * dist * 0.01);
+        rawCtx.stroke();
+      }
+      rawCtx.restore();
+
+      // 模擬暗電流椒鹽雜訊 (Black Level Noise $\perp$)
+      if (lux < 40) {
+        const noiseCount = (40 - lux) * 80;
+        rawCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        for(let i=0; i<noiseCount; i++) {
+          rawCtx.fillRect(Math.random()*w, Math.random()*h, 1.5, 1.5);
+        }
+      }
+    }
+
+    // 繪製 ISP 校正後畫面
+    function drawIspFrame(lux) {
+      const w = ispCanvas.width;
+      const h = ispCanvas.height;
+      ispCtx.fillStyle = '#050b14';
+      ispCtx.fillRect(0, 0, w, h);
+
+      ispCtx.save();
+      ispCtx.translate(w/2, h/2);
+
+      // 經過降噪與曝光增益後的完美網格
+      ispCtx.strokeStyle = '#4ade80';
+      ispCtx.lineWidth = 2;
+
+      for(let i = -60; i <= 60; i += 20) {
+        ispCtx.beginPath();
+        ispCtx.moveTo(i, -50);
+        ispCtx.lineTo(i, 50);
+        ispCtx.stroke();
+      }
+      ispCtx.restore();
+    }
+
+    // 動態更新 DSL 管線描述
+    function updateDSLDescriptions(lux, shake, dist) {
+      document.getElementById('desc-node1').innerHTML = 
+        `分區採樣演算法正在處理當前 <span class="highlight">${dist > 0.3 ? '高畸變' : '正常'}</span> 區域，設定凹包臨界值。`;
+
+      document.getElementById('desc-node2').innerHTML = 
+        `幾何畸變參數 <span class="highlight">dist=${dist.toFixed(2)}</span>，正執行 <span class="highlight">relocate()</span> 空間標籤重新映射。`;
+
+      document.getElementById('desc-node3').innerHTML = 
+        `感測照度 <span class="highlight">${lux} lux</span>，根據 $lux = B^n_r F \\theta_\\beta \\cos\\theta$ 計算，${lux < 30 ? '觸發正交 (⊥) 去噪與會話重置' : '曝光增益正常'}。`;
+
+      document.getElementById('desc-node4').innerHTML = 
+        `檢測到震動偏移 <span class="highlight">${shake}px</span>，執行 <span class="highlight">respin()</span> 進行逐列掃描線 (Cross-section) 對齊拉正。`;
+
+      document.getElementById('desc-node5').innerHTML = 
+        `以步長切片 <span class="highlight">[5::crossover_queue]</span> 丟棄模糊幀，僅提煉高 Quality 資訊傳入 DMA Buffer。`;
+    }
+
+    // 快捷情境切換
+    function setScenario(type, btn) {
+      document.querySelectorAll('.btn-scenario').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (type === 'night') {
+        document.getElementById('param-lux').value = 10;
+        document.getElementById('param-shake').value = 8;
+        document.getElementById('param-dist').value = 20;
+      } else if (type === 'action') {
+        document.getElementById('param-lux').value = 60;
+        document.getElementById('param-shake').value = 28;
+        document.getElementById('param-dist').value = 60;
+      } else if (type === 'hdr') {
+        document.getElementById('param-lux').value = 85;
+        document.getElementById('param-shake').value = 3;
+        document.getElementById('param-dist').value = 15;
+      }
+      updateSimulation();
+    }
+
+    // 初始化執行
+    updateSimulation();
+  </script>
+</body>
+</html>
